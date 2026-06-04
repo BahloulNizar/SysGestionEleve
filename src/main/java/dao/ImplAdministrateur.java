@@ -7,22 +7,28 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.Persistence;
 
 public class ImplAdministrateur implements IAdministrateur {
-    private EntityManager em;
+    // Factory kat-b9a static machi mochkil
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("GestionScolairePU");
 
     public ImplAdministrateur() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("GestionScolairePU");
-        em = emf.createEntityManager();
+        // Khawya m9as sghira
     }
 
     @Override
     public void addAdmin(Administrateur admin) {
-        em.getTransaction().begin();
-        em.persist(admin);
-        em.getTransaction().commit();
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(admin);
+            em.getTransaction().commit();
+        } finally {
+            em.close(); // dima n-sdou l-connection mlli n-salio
+        }
     }
 
     @Override
     public Administrateur login(String email, String password) {
+        EntityManager em = emf.createEntityManager();
         try {
             return em.createQuery("SELECT a FROM Administrateur a WHERE a.email = :email AND a.motDePasse = :pw", Administrateur.class)
                     .setParameter("email", email)
@@ -30,6 +36,8 @@ public class ImplAdministrateur implements IAdministrateur {
                     .getSingleResult();
         } catch (NoResultException e) {
             return null;
+        } finally {
+            em.close(); // dima n-sdou l-connection mlli n-salio
         }
     }
 }
